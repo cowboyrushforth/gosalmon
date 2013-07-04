@@ -22,6 +22,7 @@ type Salmon struct {
   RSAKey string
   RSAPub string
   MessageString string
+  EncryptionHeader string
 }
 
 func (self *Salmon) generateMessageString() {
@@ -84,7 +85,7 @@ func (self *Salmon) EncodeToXml() string {
 
   // XXX: is there a more efficient way?
   // XXX: encryption header is for diaspora
-  template = strings.Replace(template, "$encryption_header", "", 1)
+  template = strings.Replace(template, "$encryption_header", self.EncryptionHeader, 1)
   template = strings.Replace(template, "$encoding", self.Encoding, 1)
   template = strings.Replace(template, "$algo", self.Algorithm, 1)
   template = strings.Replace(template, "$datatype", self.Datatype, 1)
