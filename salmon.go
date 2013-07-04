@@ -8,6 +8,7 @@ import "crypto/rsa"
 import "crypto/sha1"
 import "crypto/x509"
 import "encoding/pem"
+import "io"
 
 
 type Salmon struct {
@@ -19,6 +20,7 @@ type Salmon struct {
   Signature string
   KeyId string
   RSAKey string
+  RSAPub string
   MessageString string
 }
 
@@ -33,7 +35,7 @@ func (self *Salmon) generateMessageString() {
 }
 
 // populate variables post initialize
-func (self *Salmon) Encrypt() {
+func (self *Salmon) Encode() {
   // we expect to have:
   // Payload
   // Datatype
@@ -55,7 +57,9 @@ func (self *Salmon) Encrypt() {
   }
   key, err := x509.ParsePKCS1PrivateKey(p.Bytes)
   h := sha1.New()
+  io.WriteString(h, self.MessageString)
   sum := h.Sum(nil)
+
   sig, err := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA1, sum)
   if err != nil {
     panic("could not sign")
@@ -63,10 +67,9 @@ func (self *Salmon) Encrypt() {
   self.Signature = base64.URLEncoding.EncodeToString(sig)
 }
 
-
-// returns string of xml
-func (self *Salmon) EncryptToXml() string {
-  self.Encrypt()
+// return xml representation of self
+func (self *Salmon) EncodeToXml() string {
+  self.Encode()
 
   template := `<?xml version='1.0' encoding='UTF-8'?>
   <entry xmlns='http://www.w3.org/2005/Atom'>
@@ -91,14 +94,58 @@ func (self *Salmon) EncryptToXml() string {
   return template
 }
 
+// returns json representation of self
+func (self *Salmon) EncodeToJson() string {
+  // XXX: todo
+  return "{'todo':true}"
+}
+
+func (self *Salmon) Decode() {
+  res, err := base64.URLEncoding.DecodeString(self.EncodedPayload)
+  if(err != nil) {
+    panic(err)
+  }
+  self.Payload = string(res)
+}
+
 // populates self from xml
-func (self *Salmon) DecryptFromXml(xml string) {
+func (self *Salmon) DecodeFromXml(xml string) {
+  // XXX: todo
+}
+
+// populates self from json
+func (self *Salmon) DecodeFromJson(xml string) {
+  // XXX: todo
 }
 
 // is this salmon envelope valid?
 // this assumes you have populated
-// RSAKey with the key on the verifiers side
+// RSAPub with the pubkey
 func (self *Salmon) IsValid() bool {
+  self.generateMessageString()
+
+  p, _ := pem.Decode([]byte(self.RSAPub))
+  if p == nil {
+    panic("could not parse public key")
+  }
+  key, err := x509.ParsePKIXPublicKey(p.Bytes)
+  if(err != nil) {
+    panic("could not parse public key")
+  }
+
+  res, erra := base64.URLEncoding.DecodeString(self.Signature)
+  if(erra != nil) {
+    panic(erra)
+  }
+
+  h := sha1.New()
+  io.WriteString(h, self.MessageString)
+  sum := h.Sum(nil)
+
+  errb := rsa.VerifyPKCS1v15(key.(*rsa.PublicKey), crypto.SHA1, sum, res) 
+  if(errb == nil) {
+    return true
+  }
+
   return false
 }
-
