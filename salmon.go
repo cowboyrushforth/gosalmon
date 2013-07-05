@@ -9,7 +9,8 @@ import "crypto/sha256"
 import "crypto/x509"
 import "encoding/pem"
 import "io"
-
+import "errors"
+import "encoding/xml"
 
 type Salmon struct {
   Payload string
@@ -20,9 +21,26 @@ type Salmon struct {
   Signature string
   KeyId string
   RSAKey string
-  RSAPub string
+  RSAPubKey string
   MessageString string
   EncryptionHeader string
+}
+
+type Dataitem struct {
+  Datatype string `xml:"type,attr"`
+  Data string `xml:",chardata"`
+}
+
+type SalmonEnvelope struct {
+  Dataitem Dataitem `xml:"data"`
+  Encoding string `xml:"encoding"`
+  Algorithm string `xml:"alg"`
+  Signature string `xml:"sig"`
+}
+
+type XmlPackage struct {
+  EncryptedHeader string `xml:"encrypted_header"`
+  Envelope SalmonEnvelope `xml:"env"`
 }
 
 func (self *Salmon) generateMessageString() {
@@ -122,22 +140,33 @@ func (self *Salmon) Decode() {
 }
 
 // populates self from xml
-func (self *Salmon) DecodeFromXml(xml string) {
-  // XXX: todo
+// returns error if not verified
+func (self *Salmon) DecodeFromXml(xmlstr string) (err error) {
+  var p XmlPackage
+  xml.Unmarshal([]byte(xmlstr), &p)
+  self.EncryptionHeader = strings.Trim(p.EncryptedHeader, " \n")
+  self.EncodedPayload   = strings.Trim(p.Envelope.Dataitem.Data, " \n")
+  self.Datatype         = strings.Trim(p.Envelope.Dataitem.Datatype, " \n")
+  self.Encoding         = strings.Trim(p.Envelope.Encoding, " \n")
+  self.Algorithm        = strings.Trim(p.Envelope.Algorithm, " \n")
+  self.Signature        = strings.Trim(p.Envelope.Signature, " \n")
+  self.Decode()
+  return nil
 }
 
 // populates self from json
-func (self *Salmon) DecodeFromJson(xml string) {
+func (self *Salmon) DecodeFromJson(xml string) (err error) {
   // XXX: todo
+  return errors.New("todo")
 }
 
 // is this salmon envelope valid?
 // this assumes you have populated
-// RSAPub with the pubkey
+// RSAPubKey with the pubkey
 func (self *Salmon) IsValid() bool {
   self.generateMessageString()
 
-  p, _ := pem.Decode([]byte(self.RSAPub))
+  p, _ := pem.Decode([]byte(self.RSAPubKey))
   if p == nil {
     panic("could not parse public key")
   }

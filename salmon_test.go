@@ -37,7 +37,7 @@ func TestDecode(t *testing.T) {
     Datatype: "application/atom+xml",
     Algorithm: "RSA-SHA256",
     Encoding: "base64url",
-    RSAPub: `-----BEGIN PUBLIC KEY-----
+    RSAPubKey: `-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChn85X/ysbMlnnuQaXHDwfWTmA
 0CMs5LJdzYVtRgT4Ua9djNGbgIS3xoVrw0XCjDyKy+3/sOzYFnADxrPSSJYhT159
 OiEbBA0y8XHNygkdt/e3o32JBOAnRWjQqBgcwzrTCCPvm6Wne9PzHRnm53mMZqu9
