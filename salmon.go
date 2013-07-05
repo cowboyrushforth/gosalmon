@@ -69,22 +69,35 @@ func (self *Salmon) Encode() {
 }
 
 // return xml representation of self
-func (self *Salmon) EncodeToXml() string {
+func (self *Salmon) EncodeToXml(forDiaspora bool) string {
   self.Encode()
 
   template := `<?xml version='1.0' encoding='UTF-8'?>
-  <entry xmlns='http://www.w3.org/2005/Atom'>
+  $beginning
   $encryption_header
-  <me:env xmlns:me="http://salmon-protocol.org/ns/magic-env">
-  <me:encoding>$encoding</me:encoding>
-  <me:alg>$algo</me:alg>
-  <me:data type="$datatype">$data</me:data>
-  <me:sig>$sig</me:sig>
+    <me:env xmlns:me="http://salmon-protocol.org/ns/magic-env">
+    <me:encoding>$encoding</me:encoding>
+    <me:alg>$algo</me:alg>
+    <me:data type="$datatype">$data</me:data>
+    <me:sig>$sig</me:sig>
   </me:env>
-  </entry>`
+$ending`
 
-  // XXX: is there a more efficient way?
-  // XXX: encryption header is for diaspora
+  // XXX: is there a more efficient way than all this Replacing?
+
+  if forDiaspora {
+    template = strings.Replace(template, 
+                               "$beginning",
+                               `<diaspora xmlns="https://joindiaspora.com/protocol" xmlns:me="http://salmon-protocol.org/ns/magic-env">`,
+                               1)
+    template = strings.Replace(template, "$ending", "</diaspora>", 1)
+  } else {
+    template = strings.Replace(template, 
+                               "$beginning",
+                               `<entry xmlns='http://www.w3.org/2005/Atom'>`,
+                               1)
+    template = strings.Replace(template, "$ending", "</entry>", 1)
+  }
   template = strings.Replace(template, "$encryption_header", self.EncryptionHeader, 1)
   template = strings.Replace(template, "$encoding", self.Encoding, 1)
   template = strings.Replace(template, "$algo", self.Algorithm, 1)
