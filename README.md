@@ -13,5 +13,3 @@ feel free to contribute
 * properly support algorithms such as sha256 
 * salmon to json
 * json to salmon
-* xml to salmon
-* research and figure out base64 padding differences
