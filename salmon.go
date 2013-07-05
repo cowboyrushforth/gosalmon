@@ -5,7 +5,7 @@ import "crypto"
 import "encoding/base64"
 import "crypto/rand"
 import "crypto/rsa"
-import "crypto/sha1"
+import "crypto/sha256"
 import "crypto/x509"
 import "encoding/pem"
 import "io"
@@ -51,17 +51,16 @@ func (self *Salmon) Encode() {
   data := []byte(self.Payload)
   self.EncodedPayload = base64.URLEncoding.EncodeToString(data)
   self.generateMessageString()
-
   p, _ := pem.Decode([]byte(self.RSAKey))
   if p == nil {
     panic("could not parse private key")
   }
   key, err := x509.ParsePKCS1PrivateKey(p.Bytes)
-  h := sha1.New()
+  h := sha256.New()
   io.WriteString(h, self.MessageString)
   sum := h.Sum(nil)
 
-  sig, err := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA1, sum)
+  sig, err := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, sum)
   if err != nil {
     panic("could not sign")
   }
@@ -152,11 +151,11 @@ func (self *Salmon) IsValid() bool {
     panic(erra)
   }
 
-  h := sha1.New()
+  h := sha256.New()
   io.WriteString(h, self.MessageString)
   sum := h.Sum(nil)
 
-  errb := rsa.VerifyPKCS1v15(key.(*rsa.PublicKey), crypto.SHA1, sum, res) 
+  errb := rsa.VerifyPKCS1v15(key.(*rsa.PublicKey), crypto.SHA256, sum, res) 
   if(errb == nil) {
     return true
   }
