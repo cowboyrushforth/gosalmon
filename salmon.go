@@ -24,11 +24,16 @@ type Salmon struct {
   RSAPubKey string
   MessageString string
   EncryptionHeader string
+  AuthorId string
 }
 
 type Dataitem struct {
   Datatype string `xml:"type,attr"`
   Data string `xml:",chardata"`
+}
+
+type UnencryptedHeader struct {
+  AuthorId string `xml:"author_id"`
 }
 
 type SalmonEnvelope struct {
@@ -40,6 +45,7 @@ type SalmonEnvelope struct {
 
 type XmlPackage struct {
   EncryptedHeader string `xml:"encrypted_header"`
+  UnencryptedHeader UnencryptedHeader `xml:"header"`
   Envelope SalmonEnvelope `xml:"env"`
 }
 
@@ -145,6 +151,7 @@ func (self *Salmon) DecodeFromXml(xmlstr string) (err error) {
   var p XmlPackage
   xml.Unmarshal([]byte(xmlstr), &p)
   self.EncryptionHeader = strings.Trim(p.EncryptedHeader, " \n")
+  self.AuthorId         = strings.Trim(p.UnencryptedHeader.AuthorId, " \n")
   self.EncodedPayload   = strings.Trim(p.Envelope.Dataitem.Data, " \n")
   self.Datatype         = strings.Trim(p.Envelope.Dataitem.Datatype, " \n")
   self.Encoding         = strings.Trim(p.Envelope.Encoding, " \n")
