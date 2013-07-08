@@ -24,7 +24,7 @@ SN3NtzOQR5Kwoi1AjwJAeb7rA4deTmr1yjLSQcMqCRgGV1ywOAlIJ6LdoOh31FMN
 M0giz6s+HWVKgB3jmmXbvNqfvViYNqtK8XVibOL5fQ==
 -----END RSA PRIVATE KEY-----`,
   }
-  xml := salmon.EncodeToXml()
+  xml := salmon.EncodeToXml(false)
   if len(xml) == 0 {
     t.Errorf("could not generate xml")
   }
@@ -33,7 +33,7 @@ M0giz6s+HWVKgB3jmmXbvNqfvViYNqtK8XVibOL5fQ==
 func TestDecode(t *testing.T) {
   salmon := Salmon{
     EncodedPayload: "b25hYm9hdGFzZGZpaGFkc29mYThhZm9paGFmZGFlb2loYWZraGFzZGZwb2phZGZnMDl5Z3Jhb3Voc2Rmb2FzZjhhd2VyOTB1YWZyISNxZXJpb2hhZmtsYWZpbGFyZjkwdTRyOTAyYXNkb2ZoYTg5MjQ4aGY4aGFvaWphZnVoYXNmZGFzZGZvYXNkZm9uYWJvYXQ=",
-    Signature: "XLoSNwA2IJaBDR87bfu_DaxdF-LBRCzBIaGI2mynPt6vM4ZMsXUq8r3ht4adkBM28kMjM1jP_O3OfrbRMBS0mxXLOvxP8W534c35nQK6u7ilKZe3k2jgQPzHp1VcfAuwjYbhTtJeS8zw0w1mPbvPq-J3JpkXuI18-cl3rXyp6FU=",
+    Signature: "O4CxIjOL4RtKsm2N5OxnHJu8Z9akGdvyhMrhkZpQyfNkRGqE0Ol90n6a0LsYHk6gVTX4f2C_vAxteifUpxFXxGLeXEspHx34JdubdThOrweB7qxVlOzzZyoz4dCYpPXwhfCT1el7QqoiBnhxOqvItcXEowszm9wNHpZWIRQKFYk=",
     Datatype: "application/atom+xml",
     Algorithm: "RSA-SHA256",
     Encoding: "base64url",
